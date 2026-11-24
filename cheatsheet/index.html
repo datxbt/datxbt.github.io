@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cheatsheet Python Tkinter</title>
+<style>
+body { background:#fff; color:#000; font:14px/1.45 "Courier New", Consolas, monospace; max-width:920px; margin:0 auto; padding:16px; }
+a { color:#000; }
+h1, h2, h3 { font-size:inherit; font-weight:bold; }
+h1 { text-transform:uppercase; border-bottom:3px double #000; padding-bottom:4px; }
+h2 { text-transform:uppercase; border-top:1px solid #000; padding-top:12px; margin-top:32px; }
+h2::before { content:"## "; }
+h3::before { content:"### "; }
+pre { border:1px solid #000; padding:8px; overflow-x:auto; font:inherit; font-size:13px; }
+code { font:inherit; }
+table { border-collapse:collapse; width:100%; }
+th, td { border:1px solid #000; padding:3px 6px; text-align:left; vertical-align:top; }
+.shot img { display:block; max-width:100%; height:auto; border:1px solid #000; margin-top:4px; }
+ul { padding-left:20px; }
+</style>
+</head>
+<body>
+<h1>Python · Tkinter: cheatsheet ôn thi</h1>
+<p>Mục lục:</p>
+<ol>
+<li><a href="#chienluoc">Chiến lược làm bài</a></li>
+<li><a href="#khung">Khung chương trình (copy là chạy)</a></li>
+<li><a href="#cuaso">Cửa sổ & Widget</a></li>
+<li><a href="#bocuc">Bố cục: grid / pack / place</a></li>
+<li><a href="#bien">Biến điều khiển</a></li>
+<li><a href="#sukien">Sự kiện: command, bind, after</a></li>
+<li><a href="#hopthoai">Hộp thoại</a></li>
+<li><a href="#menu">Menu, popup, nút X</a></li>
+<li><a href="#treeview">Treeview (bảng dữ liệu)</a></li>
+<li><a href="#sqlite">SQLite (và MySQL)</a></li>
+<li><a href="#kiemtra">Kiểm tra dữ liệu (validate)</a></li>
+<li><a href="#chuoi">Chuỗi & định dạng số</a></li>
+<li><a href="#file">Đọc / ghi file</a></li>
+<li><a href="#baitap">Bài tính toán hay gặp</a></li>
+<li><a href="#python">Python cơ bản</a></li>
+<li><a href="#oop">Lập trình hướng đối tượng</a></li>
+<li><a href="#loi">Lỗi thường gặp → cách sửa</a></li>
+</ol>
+
+<section id="chienluoc"><h2>Chiến lược làm bài</h2><h3>Thứ tự làm bài 90 phút</h3><ul><li><b>Câu tính toán (≈15')</b>: viết hàm tính trước → giao diện grid → <code>try/except</code> + <code>showerror</code> → <code>bind('&lt;Return&gt;')</code> → nút Xóa.</li><li><b>Câu CRUD (≈60')</b>: copy <i>Khung CRUD</i> bên dưới → đổi tên cột/ô cho đúng đề → chạy được Thêm + Treeview NGAY (điểm lớn nhất) → validate → chọn dòng/Sửa/Xóa → menu, popup, nút X.</li><li><b>10' cuối</b>: chạy lại từ đầu (xóa file .db) và thử từng yêu cầu của đề. Code báo lỗi khi chạy là mất nửa số điểm.</li><li>Không cần đẹp, cần <b>ĐỦ</b>. Mỗi ý trong đề = 1 dòng checklist, làm xong đánh dấu.</li></ul><table><thead><tr><th>Mẹo</th><th>Chi tiết</th></tr></thead><tbody><tr><td>Tìm nhanh</td><td>Bấm <code>/</code> để gõ vào ô tìm kiếm. Gõ không dấu cũng được: <code>xoa dong</code> tìm ra <i>Xóa dòng</i>.</td></tr><tr><td>Copy</td><td>Mỗi khung code có nút <b>Copy</b> ở góc phải.</td></tr><tr><td>File dữ liệu</td><td>Luôn <code>open(..., encoding="utf-8")</code>. Thêm <code>os.chdir(...)</code> ở đầu file để không lỗi đường dẫn.</td></tr></tbody></table><h3>Dòng import chuẩn (dán đầu mọi bài)</h3><pre><code>import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
+import sqlite3
+import os, re
+from datetime import datetime
+
+# Chạy ở đâu cũng tìm thấy khoa.txt / file .db nằm cạnh file .py
+os.chdir(os.path.dirname(os.path.abspath(__file__)))</code></pre><h3>Kiểu import nào? (đừng trộn lẫn lung tung)</h3><ul><li>Dùng chuỗi <code>"end"</code>, <code>"w"</code>, <code>"left"</code>, <code>"x"</code>, <code>"both"</code>... chạy được với MỌI kiểu import.</li></ul><table><thead><tr><th>Cách import</th><th>Viết widget</th><th>Hằng số</th></tr></thead><tbody><tr><td><code>import tkinter as tk</code></td><td><code>tk.Label(...)</code></td><td><code>tk.END</code>, <code>tk.W</code> hoặc chuỗi <code>"end"</code>, <code>"w"</code></td></tr><tr><td><code>from tkinter import *</code></td><td><code>Label(...)</code></td><td><code>END</code>, <code>W</code>, <code>LEFT</code></td></tr><tr><td>ttk &amp; messagebox</td><td>luôn phải import riêng</td><td><code>from tkinter import ttk, messagebox</code></td></tr></tbody></table></section><section id="khung"><h2>Khung chương trình (copy là chạy)</h2><h3>① Khung CRUD: Form + SQLite + Treeview + Tìm kiếm + Menu + Popup</h3><ul><li>Bao trọn dạng đề quản lý: Thêm / Sửa / Xóa / Làm mới / Tìm / chọn dòng hiện lên form / đếm số dòng / menu File / chuột phải / hỏi khi bấm X.</li><li><b>Đổi cho đúng đề</b>: tên bảng + cột trong <code>CREATE TABLE</code> → các ô trên form → <code>kiemtra()</code> → <code>lay_form()</code> (đúng thứ tự cột) → câu <code>UPDATE</code> → <code>chon_dong()</code> → <code>cot/tieude/dorong</code>.</li><li>Số dấu <code>?</code> trong INSERT = số cột. <code>lay_form()</code> trả về tuple đúng thứ tự cột trong CREATE TABLE.</li></ul><pre><code>import tkinter as tk
+from tkinter import ttk, messagebox
+import sqlite3, os
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+# ================= CSDL =================
+con = sqlite3.connect("quanly.db")
+cur = con.cursor()
+cur.execute("""CREATE TABLE IF NOT EXISTS sinhvien(
+    ma TEXT PRIMARY KEY, ten TEXT, gioitinh TEXT,
+    khoa TEXT, sothich TEXT, diem REAL)""")
+con.commit()
+
+# ================= GIAO DIỆN =================
+window = tk.Tk()
+window.title("Quản lý sinh viên")
+window.geometry("900x580")
+
+frm = tk.LabelFrame(window, text="Thông tin sinh viên", padx=10, pady=10)
+frm.pack(fill="x", padx=10, pady=5)          # window: dùng pack cho các khung lớn
+
+# --- Cột trái: Entry (bên trong frm: chỉ dùng grid) ---
+tk.Label(frm, text="Mã SV:").grid(row=0, column=0, sticky="w")
+txtMa = tk.Entry(frm, width=25)
+txtMa.grid(row=0, column=1, pady=3)
+tk.Label(frm, text="Họ tên:").grid(row=1, column=0, sticky="w")
+txtTen = tk.Entry(frm, width=25)
+txtTen.grid(row=1, column=1, pady=3)
+tk.Label(frm, text="Điểm:").grid(row=2, column=0, sticky="w")
+txtDiem = tk.Entry(frm, width=25)
+txtDiem.grid(row=2, column=1, pady=3)
+
+# --- Cột phải: Radiobutton / Combobox / Checkbutton ---
+tk.Label(frm, text="Giới tính:").grid(row=0, column=2, sticky="w", padx=(30, 5))
+gioitinh = tk.StringVar(value="")             # "" = chưa chọn
+frmGT = tk.Frame(frm)
+frmGT.grid(row=0, column=3, sticky="w")
+tk.Radiobutton(frmGT, text="Nam", value="Nam", variable=gioitinh).pack(side="left")
+tk.Radiobutton(frmGT, text="Nữ", value="Nữ", variable=gioitinh).pack(side="left")
+
+tk.Label(frm, text="Khoa:").grid(row=1, column=2, sticky="w", padx=(30, 5))
+ds_khoa = []
+if os.path.exists("khoa.txt"):
+    f = open("khoa.txt", encoding="utf-8")
+    for dong in f.read().splitlines():
+        if dong.strip() != "":
+            ds_khoa.append(dong.strip())
+    f.close()
+cbKhoa = ttk.Combobox(frm, values=ds_khoa, state="readonly", width=25)
+cbKhoa.grid(row=1, column=3, sticky="w")
+
+tk.Label(frm, text="Sở thích:").grid(row=2, column=2, sticky="w", padx=(30, 5))
+thethao = tk.IntVar()
+amnhac = tk.IntVar()
+docsach = tk.IntVar()
+frmST = tk.Frame(frm)
+frmST.grid(row=2, column=3, sticky="w")
+tk.Checkbutton(frmST, text="Thể thao", variable=thethao).pack(side="left")
+tk.Checkbutton(frmST, text="Âm nhạc", variable=amnhac).pack(side="left")
+tk.Checkbutton(frmST, text="Đọc sách", variable=docsach).pack(side="left")
+
+
+# ================= KIỂM TRA DỮ LIỆU =================
+def kiemtra():
+    ma = txtMa.get().strip()
+    if len(ma) != 6 or ma[0] != "A" or not ma[1:].isdigit():
+        messagebox.showerror("Lỗi", "Mã SV phải dạng A + 5 chữ số (VD A45371)")
+        return False
+    if txtTen.get().strip() == "":
+        messagebox.showerror("Lỗi", "Chưa nhập họ tên")
+        return False
+    try:
+        diem = float(txtDiem.get())
+        if diem &lt; 0 or diem &gt; 10:
+            raise ValueError
+    except ValueError:
+        messagebox.showerror("Lỗi", "Điểm phải là số từ 0 đến 10")
+        return False
+    if gioitinh.get() == "":
+        messagebox.showerror("Lỗi", "Chưa chọn giới tính")
+        return False
+    if cbKhoa.get() == "":
+        messagebox.showerror("Lỗi", "Chưa chọn khoa")
+        return False
+    return True
+
+
+def lay_sothich():                    # -&gt; "Thể thao, Đọc sách"
+    ds = []
+    if thethao.get() == 1:
+        ds.append("Thể thao")
+    if amnhac.get() == 1:
+        ds.append("Âm nhạc")
+    if docsach.get() == 1:
+        ds.append("Đọc sách")
+    return ", ".join(ds)
+
+
+def lay_form():                       # tuple 6 giá trị đúng thứ tự cột
+    return (txtMa.get().strip(), txtTen.get().strip(), gioitinh.get(),
+            cbKhoa.get(), lay_sothich(), float(txtDiem.get()))
+
+
+# ================= XỬ LÝ =================
+def load_data(tu_khoa=""):
+    for dong in tree.get_children():
+        tree.delete(dong)
+    cur.execute("SELECT * FROM sinhvien WHERE ma LIKE ? OR ten LIKE ? ORDER BY ma",
+                ("%" + tu_khoa + "%", "%" + tu_khoa + "%"))
+    for row in cur.fetchall():
+        tree.insert("", "end", iid=row[0], values=row)     # iid = mã
+    lblDem.config(text="Tổng: " + str(len(tree.get_children())) + " sinh viên")
+
+
+def lammoi():
+    txtMa.config(state="normal")
+    txtMa.delete(0, "end")
+    txtTen.delete(0, "end")
+    txtDiem.delete(0, "end")
+    gioitinh.set("")
+    cbKhoa.set("")
+    thethao.set(0)
+    amnhac.set(0)
+    docsach.set(0)
+    txtMa.focus()
+
+
+def them():
+    if not kiemtra():
+        return
+    try:
+        cur.execute("INSERT INTO sinhvien VALUES (?, ?, ?, ?, ?, ?)", lay_form())
+        con.commit()
+    except sqlite3.IntegrityError:
+        messagebox.showerror("Lỗi", "Mã sinh viên đã tồn tại!")
+        return
+    messagebox.showinfo("Thông báo", "Thêm thành công")
+    load_data()
+    lammoi()
+
+
+def chon_dong(event=None):
+    chon = tree.selection()
+    if len(chon) == 0:
+        return
+    cur.execute("SELECT * FROM sinhvien WHERE ma = ?", (chon[0],))  # đọc lại từ CSDL
+    row = cur.fetchone()                                            # (giữ số 0 đầu SĐT)
+    if row is None:
+        return
+    lammoi()
+    txtMa.insert(0, row[0])
+    txtMa.config(state="readonly")          # không cho sửa khóa chính
+    txtTen.insert(0, row[1])
+    gioitinh.set(row[2])
+    cbKhoa.set(row[3])
+    thethao.set(1 if "Thể thao" in row[4] else 0)
+    amnhac.set(1 if "Âm nhạc" in row[4] else 0)
+    docsach.set(1 if "Đọc sách" in row[4] else 0)
+    txtDiem.insert(0, row[5])
+
+
+def sua():
+    if len(tree.selection()) == 0:
+        messagebox.showwarning("Chú ý", "Hãy chọn dòng cần sửa")
+        return
+    if not kiemtra():
+        return
+    ma, ten, gt, khoa, st, diem = lay_form()
+    cur.execute("UPDATE sinhvien SET ten=?, gioitinh=?, khoa=?, sothich=?, diem=? WHERE ma=?",
+                (ten, gt, khoa, st, diem, ma))
+    con.commit()
+    messagebox.showinfo("Thông báo", "Sửa thành công")
+    load_data()
+    lammoi()
+
+
+def xoa():
+    chon = tree.selection()
+    if len(chon) == 0:
+        messagebox.showwarning("Chú ý", "Hãy chọn dòng cần xóa")
+        return
+    if messagebox.askyesno("Xác nhận", "Xóa sinh viên " + chon[0] + "?"):
+        cur.execute("DELETE FROM sinhvien WHERE ma = ?", (chon[0],))
+        con.commit()
+        load_data()
+        lammoi()
+
+
+def tim():
+    load_data(txtTim.get().strip())
+
+
+def thoat():
+    if messagebox.askyesno("Thoát", "Bạn có muốn thoát?"):
+        con.close()
+        window.destroy()
+
+
+# ================= NÚT + TÌM KIẾM =================
+frmNut = tk.Frame(window)
+frmNut.pack(pady=4)
+tk.Button(frmNut, text="Thêm", width=10, command=them).pack(side="left", padx=3)
+tk.Button(frmNut, text="Sửa", width=10, command=sua).pack(side="left", padx=3)
+tk.Button(frmNut, text="Xóa", width=10, command=xoa).pack(side="left", padx=3)
+tk.Button(frmNut, text="Làm mới", width=10, command=lammoi).pack(side="left", padx=3)
+tk.Label(frmNut, text="   Tìm:").pack(side="left")
+txtTim = tk.Entry(frmNut, width=20)
+txtTim.pack(side="left")
+tk.Button(frmNut, text="Tìm", width=8, command=tim).pack(side="left", padx=3)
+txtTim.bind("&lt;Return&gt;", lambda e: tim())
+
+# ================= TREEVIEW + THANH CUỘN =================
+frmTree = tk.Frame(window)
+frmTree.pack(fill="both", expand=True, padx=10, pady=5)
+cot = ("ma", "ten", "gioitinh", "khoa", "sothich", "diem")
+tieude = ("Mã SV", "Họ tên", "Giới tính", "Khoa", "Sở thích", "Điểm")
+dorong = (80, 170, 70, 180, 170, 60)
+tree = ttk.Treeview(frmTree, columns=cot, show="headings")
+for i in range(len(cot)):
+    tree.heading(cot[i], text=tieude[i])
+    tree.column(cot[i], width=dorong[i], anchor="w")
+sb = ttk.Scrollbar(frmTree, orient="vertical", command=tree.yview)
+tree.configure(yscrollcommand=sb.set)
+tree.pack(side="left", fill="both", expand=True)
+sb.pack(side="right", fill="y")
+tree.bind("&lt;&lt;TreeviewSelect&gt;&gt;", chon_dong)
+
+lblDem = tk.Label(window, text="")
+lblDem.pack(anchor="w", padx=10)
+
+# ================= MENU + POPUP + NÚT X =================
+menubar = tk.Menu(window)
+filemenu = tk.Menu(menubar, tearoff=0)
+filemenu.add_command(label="Làm mới", command=lammoi)
+filemenu.add_separator()
+filemenu.add_command(label="Thoát", command=thoat)
+menubar.add_cascade(label="File", menu=filemenu)
+window.config(menu=menubar)
+
+popup = tk.Menu(window, tearoff=0)
+popup.add_command(label="Sửa dòng này", command=sua)
+popup.add_command(label="Xóa dòng này", command=xoa)
+
+
+def hien_popup(event):
+    dong = tree.identify_row(event.y)
+    if dong != "":
+        tree.selection_set(dong)
+        popup.tk_popup(event.x_root, event.y_root)
+        popup.grab_release()
+
+
+tree.bind("&lt;Button-3&gt;", hien_popup)
+window.protocol("WM_DELETE_WINDOW", thoat)
+
+load_data()
+window.mainloop()</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: ① Khung CRUD: Form + SQLite + Treeview + Tìm kiếm + Menu + Popup" height="632" loading="lazy" src="img/01.png" width="902"/></p><h3>② Khung bài tính toán: Entry → nút → kết quả</h3><ul><li>Mẫu: tiền điện bậc thang. Đổi <code>BAC</code> và <code>tinh_tien()</code> là thành tiền nước / taxi / thuế TNCN.</li><li>Đủ các ý hay ra: hàm tính riêng, <code>try/except</code>, <code>showerror</code>, phím Enter, nút Xóa, phân cách hàng nghìn.</li></ul><pre><code>import tkinter as tk
+from tkinter import messagebox
+
+BAC = [(50, 1800), (50, 1900), (100, 2200), (None, 2800)]  # (số lượng của bậc, đơn giá); None = phần còn lại
+
+
+def tinh_tien(so):                   # hàm tính RIÊNG -&gt; dễ chấm, dễ kiểm tra
+    tien = 0
+    con_lai = so
+    for so_bac, gia in BAC:
+        if con_lai &lt;= 0:
+            break
+        if so_bac is None or con_lai &lt; so_bac:
+            dung = con_lai
+        else:
+            dung = so_bac
+        tien = tien + dung * gia
+        con_lai = con_lai - dung
+    return tien
+
+
+def xu_ly(event=None):               # event=None: dùng được cho cả nút và phím Enter
+    try:
+        so = int(txtSo.get())
+        if so &lt; 0:
+            raise ValueError
+    except ValueError:
+        messagebox.showerror("Lỗi", "Phải nhập số nguyên không âm!")
+        xoa()
+        return
+    tien = tinh_tien(so)
+    vat = tien * 0.1
+    lblTien.config(text=f"{tien:,.0f} đ")
+    lblVat.config(text=f"{vat:,.0f} đ")
+    lblTong.config(text=f"{tien + vat:,.0f} đ")
+
+
+def xoa():
+    txtSo.delete(0, "end")
+    lblTien.config(text="")
+    lblVat.config(text="")
+    lblTong.config(text="")
+    txtSo.focus()
+
+
+window = tk.Tk()
+window.title("Tính tiền điện")
+window.resizable(False, False)
+
+tk.Label(window, text="TÍNH TIỀN ĐIỆN", font=("Arial", 16, "bold")).grid(row=0, column=0, columnspan=3, pady=10)
+tk.Label(window, text="Số kWh:").grid(row=1, column=0, sticky="w", padx=10)
+txtSo = tk.Entry(window, width=20)
+txtSo.grid(row=1, column=1, columnspan=2, sticky="w")
+
+tk.Label(window, text="Tiền điện:").grid(row=2, column=0, sticky="w", padx=10)
+lblTien = tk.Label(window, text="", fg="blue")
+lblTien.grid(row=2, column=1, sticky="w")
+tk.Label(window, text="VAT 10%:").grid(row=3, column=0, sticky="w", padx=10)
+lblVat = tk.Label(window, text="", fg="blue")
+lblVat.grid(row=3, column=1, sticky="w")
+tk.Label(window, text="Tổng:").grid(row=4, column=0, sticky="w", padx=10)
+lblTong = tk.Label(window, text="", fg="red", font=("Arial", 11, "bold"))
+lblTong.grid(row=4, column=1, sticky="w")
+
+tk.Button(window, text="Tính", width=10, command=xu_ly).grid(row=5, column=1, pady=10)
+tk.Button(window, text="Xóa", width=10, command=xoa).grid(row=5, column=2, pady=10, padx=10)
+
+window.bind("&lt;Return&gt;", xu_ly)
+txtSo.focus()
+window.mainloop()</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: ② Khung bài tính toán: Entry → nút → kết quả" height="215" loading="lazy" src="img/02.png" width="260"/></p><h3>③ Khung dạng class (OOP) + nút dùng lambda</h3><ul><li>Khi đề yêu cầu "viết theo hướng đối tượng": mọi widget gắn vào <code>self.</code>, mọi hàm xử lý là method có <code>self</code>.</li><li><code>command=lambda p=pt: self.tinh(p)</code>: truyền tham số cho hàm của nút (không có <code>p=pt</code> thì nút nào cũng thành phép cuối).</li></ul><pre><code>import tkinter as tk
+from tkinter import messagebox
+
+
+class App:
+    def __init__(self, root):
+        self.root = root
+        root.title("Máy tính")
+        tk.Label(root, text="Số a:").grid(row=0, column=0, sticky="w")
+        self.txtA = tk.Entry(root)
+        self.txtA.grid(row=0, column=1)
+        tk.Label(root, text="Số b:").grid(row=1, column=0, sticky="w")
+        self.txtB = tk.Entry(root)
+        self.txtB.grid(row=1, column=1)
+        self.lblKQ = tk.Label(root, text="Kết quả:", fg="blue")
+        self.lblKQ.grid(row=3, column=0, columnspan=4, sticky="w")
+        cot = 0
+        for pt in ["+", "-", "*", "/"]:
+            # lambda p=pt: ghi nhớ phép tính của TỪNG nút
+            tk.Button(root, text=pt, width=5,
+                      command=lambda p=pt: self.tinh(p)).grid(row=2, column=cot, pady=5)
+            cot = cot + 1
+
+    def tinh(self, pt):
+        try:
+            a = float(self.txtA.get())
+            b = float(self.txtB.get())
+            if pt == "+":
+                kq = a + b
+            elif pt == "-":
+                kq = a - b
+            elif pt == "*":
+                kq = a * b
+            else:
+                kq = a / b
+            self.lblKQ.config(text=f"Kết quả: {kq:g}")
+        except ValueError:
+            messagebox.showerror("Lỗi", "Phải nhập số!")
+        except ZeroDivisionError:
+            messagebox.showerror("Lỗi", "Không chia được cho 0!")
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = App(root)
+    root.mainloop()</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: ③ Khung dạng class (OOP) + nút dùng lambda" height="131" loading="lazy" src="img/03.png" width="261"/></p></section><section id="cuaso"><h2>Cửa sổ &amp; Widget</h2><h3>Cửa sổ chính</h3><pre><code>window = tk.Tk()
+window.title("Tiêu đề")
+window.geometry("800x500")           # rộng x cao
+window.geometry("800x500+200+100")   # + vị trí x, y trên màn hình
+window.resizable(False, False)       # không cho kéo giãn
+window.configure(bg="lightblue")     # màu nền
+window.minsize(400, 300)
+window.mainloop()                    # LUÔN là dòng cuối</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Cửa sổ chính" height="532" loading="lazy" src="img/04.png" width="802"/></p><h3>Label / Entry / Button</h3><ul><li><code>command=ham</code> <b>KHÔNG có ngoặc</b>. Viết <code>command=ham()</code> là hàm chạy ngay lúc mở chương trình.</li></ul><pre><code>lbl = tk.Label(window, text="Họ tên:", font=("Arial", 12, "bold"), fg="red", bg="white")
+lbl.config(text="Nội dung mới")      # đổi chữ
+lbl.cget("text")                     # đọc chữ
+
+txt = tk.Entry(window, width=30)     # show="*" để nhập mật khẩu
+txt.get()                            # -&gt; CHUỖI (muốn số thì int()/float())
+txt.delete(0, "end")                 # xóa hết
+txt.insert(0, "abc")                 # chèn vào đầu
+txt.focus()                          # đặt con trỏ
+txt.config(state="readonly")         # "normal" | "readonly" | "disabled"
+
+btn = tk.Button(window, text="OK", width=10, bg="green", fg="white", command=ham)
+btn.config(state="disabled")         # khóa nút</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Label / Entry / Button" height="122" loading="lazy" src="img/05.png" width="262"/></p><h3>Text (ô nhiều dòng)</h3><ul><li>Text dùng chỉ số <code>"1.0"</code>, KHÔNG dùng <code>0</code> như Entry.</li></ul><pre><code>t = tk.Text(window, width=40, height=5)
+noi_dung = t.get("1.0", "end").strip()   # dòng 1, ký tự 0 -&gt; hết
+t.delete("1.0", "end")
+t.insert("end", "Dòng mới\n")
+t.config(state="disabled")                # chỉ đọc</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Text (ô nhiều dòng)" height="122" loading="lazy" src="img/06.png" width="338"/></p><h3>Radiobutton (chọn 1): CHUNG 1 biến</h3><pre><code>gt = tk.StringVar(value="")             # "" = chưa chọn; value="Nam" = chọn sẵn
+tk.Radiobutton(window, text="Nam", value="Nam", variable=gt).grid(row=0, column=1)
+tk.Radiobutton(window, text="Nữ", value="Nữ", variable=gt).grid(row=0, column=2)
+gt.get()          # "Nam" / "Nữ" / ""
+gt.set("")        # bỏ chọn</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Radiobutton (chọn 1): CHUNG 1 biến" height="122" loading="lazy" src="img/07.png" width="262"/></p><h3>Checkbutton (chọn nhiều): MỖI ô 1 biến</h3><pre><code>tt = tk.IntVar()        # 1 = tick, 0 = không
+an = tk.IntVar()
+tk.Checkbutton(window, text="Thể thao", variable=tt).grid(row=1, column=1)
+tk.Checkbutton(window, text="Âm nhạc", variable=an).grid(row=1, column=2)
+
+ds = []
+if tt.get() == 1: ds.append("Thể thao")
+if an.get() == 1: ds.append("Âm nhạc")
+chuoi = ", ".join(ds)          # lưu CSDL: "Thể thao, Âm nhạc"
+tt.set("Thể thao" in chuoi)    # nạp lại từ chuỗi</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Checkbutton (chọn nhiều): MỖI ô 1 biến" height="122" loading="lazy" src="img/08.png" width="262"/></p><h3>ttk.Combobox (danh sách thả xuống)</h3><ul><li><code>state="readonly"</code>: chỉ cho chọn, không cho gõ.</li></ul><pre><code>cb = ttk.Combobox(window, values=["CNTT", "Kinh tế"], state="readonly", width=25)
+cb.grid(row=2, column=1)
+cb.current(0)                 # chọn phần tử đầu
+cb.get()                      # giá trị đang chọn ("" nếu chưa chọn)
+cb.set("")                    # bỏ chọn
+cb["values"] = ds_moi         # đổi danh sách
+
+
+def khi_chon(event):
+    print(cb.get())
+
+cb.bind("&lt;&lt;ComboboxSelected&gt;&gt;", khi_chon)</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: ttk.Combobox (danh sách thả xuống)" height="122" loading="lazy" src="img/09.png" width="262"/></p><h3>OptionMenu / Spinbox / Scale</h3><pre><code>ds = ["Hà Nội", "Huế", "TP.HCM"]
+bien = tk.StringVar(value=ds[0])
+tk.OptionMenu(window, bien, *ds).grid(row=0, column=1)   # dấu * bắt buộc
+bien.get()
+
+sp = tk.Spinbox(window, from_=1, to=100, width=5)       # from_ có dấu _
+int(sp.get())                                           # get() trả về chuỗi
+
+v = tk.IntVar(value=50)
+tk.Scale(window, from_=0, to=100, orient="horizontal", variable=v).grid(row=2, column=1)
+v.get()</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: OptionMenu / Spinbox / Scale" height="130" loading="lazy" src="img/10.png" width="262"/></p><h3>Listbox</h3><pre><code>lb = tk.Listbox(window, height=6, width=30)    # selectmode="multiple" để chọn nhiều
+lb.grid(row=0, column=0)
+lb.insert("end", "Táo")                  # thêm cuối
+lb.get(0, "end")                         # tuple tất cả phần tử
+lb.size()                                # số phần tử
+chon = lb.curselection()                 # tuple CHỈ SỐ đang chọn, vd (2,)
+if chon:
+    lb.get(chon[0])                      # giá trị dòng chọn
+    lb.delete(chon[0])                   # xóa dòng chọn
+lb.delete(0, "end")                      # xóa hết
+lb.bind("&lt;&lt;ListboxSelect&gt;&gt;", ham)</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Listbox" height="132" loading="lazy" src="img/11.png" width="262"/></p><h3>Frame / LabelFrame / Toplevel (cửa sổ phụ)</h3><pre><code>khung = tk.LabelFrame(window, text="Thông tin", padx=10, pady=10)
+khung.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+tk.Label(khung, text="Mã:").grid(row=0, column=0)      # widget con: master = khung
+
+
+def mo_cua_so_phu():
+    win2 = tk.Toplevel(window)       # KHÔNG tạo tk.Tk() thứ 2
+    win2.title("Chi tiết")
+    win2.geometry("300x150")
+    win2.grab_set()                  # khóa cửa sổ chính tới khi đóng win2
+    tk.Label(win2, text="Xin chào").pack(pady=10)
+    tk.Button(win2, text="Đóng", command=win2.destroy).pack()</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Frame / LabelFrame / Toplevel (cửa sổ phụ)" height="122" loading="lazy" src="img/12.png" width="262"/></p><h3>Ảnh &amp; Canvas</h3><pre><code>img = tk.PhotoImage(file="logo.png")         # png/gif; jpg cần thư viện PIL
+lbl = tk.Label(window, image=img)
+lbl.image = img                              # GIỮ tham chiếu, không ảnh biến mất
+lbl.grid(row=0, column=0)
+
+cv = tk.Canvas(window, width=300, height=200, bg="white")
+cv.grid(row=1, column=0)
+cv.create_line(0, 0, 300, 200, fill="red", width=2)
+cv.create_rectangle(20, 20, 120, 80, fill="yellow")
+cv.create_oval(150, 50, 250, 150, outline="blue")
+cv.create_text(150, 180, text="Canvas", font=("Arial", 14))
+cv.delete("all")</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Ảnh &amp; Canvas" height="280" loading="lazy" src="img/13.png" width="306"/></p></section><section id="bocuc"><h2>Bố cục: grid / pack / place</h2><h3>grid (dùng nhiều nhất)</h3><pre><code>w.grid(row=0, column=1,
+       padx=5, pady=5,           # khoảng cách ngoài; padx=(30, 5) = trái 30, phải 5
+       sticky="w",               # dính cạnh: "w" trái, "e" phải, "we" kéo ngang, "nsew" lấp đầy
+       columnspan=2,             # chiếm 2 cột
+       rowspan=2)                # chiếm 2 dòng
+window.columnconfigure(1, weight=1)   # cột 1 giãn theo cửa sổ
+window.rowconfigure(2, weight=1)
+w.grid_forget()                       # ẩn widget</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: grid (dùng nhiều nhất)" height="122" loading="lazy" src="img/14.png" width="262"/></p><h3>pack &amp; place</h3><pre><code>w.pack(side="left", padx=5)              # "top" (mặc định) | "left" | "right" | "bottom"
+w.pack(fill="x")                         # kéo ngang; "both" + expand=True: lấp đầy
+w.pack(anchor="w")                       # canh trái
+
+w.place(x=20, y=50)                      # tọa độ tuyệt đối
+w.place(relx=0.5, rely=0.5, anchor="center")   # giữa cửa sổ</code></pre><h3>Quy tắc vàng</h3><ul><li><b>KHÔNG trộn <code>pack</code> và <code>grid</code> trong CÙNG một khung chứa</b> → chương trình treo hoặc <code>TclError</code>.</li><li>Muốn kết hợp: window dùng <code>pack</code> cho các Frame; bên TRONG mỗi Frame dùng <code>grid</code> (như Khung CRUD).</li><li><code>x = tk.Entry(window).grid(...)</code> → <code>x</code> là <b>None</b>! Phải tách 2 dòng: tạo, rồi <code>x.grid(...)</code>.</li><li>Nhiều nút trên một hàng: đặt vào 1 <code>Frame</code> rồi <code>pack(side="left")</code>, khỏi phải canh <code>padx</code>.</li></ul></section><section id="bien"><h2>Biến điều khiển</h2><h3>StringVar / IntVar / DoubleVar / BooleanVar</h3><ul><li>Phải tạo <b>SAU</b> <code>tk.Tk()</code>, nếu không sẽ lỗi "Too early to create variable".</li></ul><pre><code>ten = tk.StringVar(value="")     # chuỗi
+so = tk.IntVar(value=0)          # số nguyên (Checkbutton, Scale)
+thuc = tk.DoubleVar()            # số thực
+co = tk.BooleanVar()             # True / False
+
+ten.get()
+ten.set("An")
+
+# Gắn vào widget: Entry/Combobox dùng textvariable=, còn lại dùng variable=
+tk.Entry(window, textvariable=ten)
+tk.Label(window, textvariable=ten)        # Label tự cập nhật theo biến
+
+
+def khi_doi(*args):                         # chạy mỗi khi biến thay đổi
+    print("Mới:", ten.get())
+
+ten.trace_add("write", khi_doi)</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: StringVar / IntVar / DoubleVar / BooleanVar" height="122" loading="lazy" src="img/16.png" width="262"/></p></section><section id="sukien"><h2>Sự kiện: command, bind, after</h2><h3>Bảng sự kiện bind</h3><ul><li>Thuộc tính event: <code>event.x</code>, <code>event.y</code> (trong widget), <code>event.x_root</code>, <code>event.y_root</code> (trên màn hình), <code>event.widget</code>, <code>event.keysym</code>, <code>event.char</code>.</li></ul><table><thead><tr><th>Chuỗi sự kiện</th><th>Khi nào</th></tr></thead><tbody><tr><td><code>&lt;Button-1&gt;</code> / <code>&lt;Button-3&gt;</code></td><td>Click chuột trái / chuột phải</td></tr><tr><td><code>&lt;Double-1&gt;</code></td><td>Nhấp đúp</td></tr><tr><td><code>&lt;Return&gt;</code> / <code>&lt;Escape&gt;</code></td><td>Phím Enter / Esc</td></tr><tr><td><code>&lt;KeyRelease&gt;</code></td><td>Mỗi lần gõ 1 phím (tìm kiếm tức thì)</td></tr><tr><td><code>&lt;Control-s&gt;</code></td><td>Ctrl + S</td></tr><tr><td><code>&lt;FocusOut&gt;</code></td><td>Rời khỏi ô nhập</td></tr><tr><td><code>&lt;&lt;ComboboxSelected&gt;&gt;</code></td><td>Chọn trong Combobox</td></tr><tr><td><code>&lt;&lt;TreeviewSelect&gt;&gt;</code></td><td>Chọn dòng Treeview</td></tr><tr><td><code>&lt;&lt;ListboxSelect&gt;&gt;</code></td><td>Chọn dòng Listbox</td></tr></tbody></table><h3>Hàm dùng chung cho nút và phím / truyền tham số</h3><pre><code>def xu_ly(event=None):        # bind truyền event, command thì không -&gt; cho mặc định None
+    ...
+
+tk.Button(window, text="Tính", command=xu_ly)
+window.bind("&lt;Return&gt;", xu_ly)                  # Enter ở bất kỳ đâu
+txt.bind("&lt;Return&gt;", xu_ly)                     # chỉ khi con trỏ trong ô txt
+
+# Truyền tham số: dùng lambda
+tk.Button(window, text="+", command=lambda: tinh("+"))
+txt.bind("&lt;KeyRelease&gt;", lambda e: load_data(txt.get()))   # tìm kiếm khi đang gõ</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Hàm dùng chung cho nút và phím / truyền tham số" height="122" loading="lazy" src="img/17.png" width="262"/></p><h3>after: đồng hồ / hẹn giờ</h3><pre><code>from datetime import datetime
+
+def cap_nhat_gio():
+    lblGio.config(text=datetime.now().strftime("%H:%M:%S %d/%m/%Y"))
+    window.after(1000, cap_nhat_gio)       # 1000 ms sau gọi lại chính nó
+
+lblGio = tk.Label(window, font=("Arial", 14))
+lblGio.grid(row=0, column=0)
+cap_nhat_gio()</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: after: đồng hồ / hẹn giờ" height="122" loading="lazy" src="img/18.png" width="262"/></p></section><section id="hopthoai"><h2>Hộp thoại</h2><h3>messagebox: giá trị trả về</h3><pre><code>from tkinter import messagebox
+messagebox.showinfo("Thông báo", "Lưu thành công")
+messagebox.showerror("Lỗi", "Dữ liệu không hợp lệ")
+if messagebox.askyesno("Xác nhận", "Bạn chắc chắn muốn xóa?"):
+    ...</code></pre><table><thead><tr><th>Hàm</th><th>Trả về</th></tr></thead><tbody><tr><td><code>showinfo</code> / <code>showwarning</code> / <code>showerror</code></td><td><code>"ok"</code></td></tr><tr><td><code>askyesno</code></td><td><code>True</code> / <code>False</code> ← dùng cho xác nhận Xóa / Thoát</td></tr><tr><td><code>askokcancel</code></td><td><code>True</code> / <code>False</code></td></tr><tr><td><code>askretrycancel</code></td><td><code>True</code> / <code>False</code></td></tr><tr><td><code>askyesnocancel</code></td><td><code>True</code> / <code>False</code> / <code>None</code> (Cancel)</td></tr><tr><td><code>askquestion</code></td><td>CHUỖI <code>"yes"</code> / <code>"no"</code> (so sánh <code>== "yes"</code>)</td></tr></tbody></table><h3>simpledialog / filedialog / colorchooser</h3><pre><code>from tkinter import simpledialog, filedialog, colorchooser
+
+ten = simpledialog.askstring("Nhập", "Tên của bạn:")     # None nếu bấm Cancel
+tuoi = simpledialog.askinteger("Nhập", "Tuổi:", minvalue=0, maxvalue=120)
+
+duong_dan = filedialog.askopenfilename(title="Chọn file",
+                                       filetypes=[("Text", "*.txt"), ("Tất cả", "*.*")])
+if duong_dan:                                            # "" nếu bấm Cancel
+    f = open(duong_dan, encoding="utf-8")
+    noi_dung = f.read()
+    f.close()
+
+luu = filedialog.asksaveasfilename(defaultextension=".txt")
+mau = colorchooser.askcolor()[1]                          # "#ff0000" hoặc None</code></pre></section><section id="menu"><h2>Menu, popup, nút X</h2><h3>Thanh menu (File / Trợ giúp)</h3><pre><code>menubar = tk.Menu(window)
+
+filemenu = tk.Menu(menubar, tearoff=0)          # tearoff=0: bỏ đường gạch đứt
+filemenu.add_command(label="Mới", command=lammoi, accelerator="Ctrl+N")
+filemenu.add_separator()                        # đường phân cách
+filemenu.add_command(label="Thoát", command=thoat)
+menubar.add_cascade(label="File", menu=filemenu)
+
+helpmenu = tk.Menu(menubar, tearoff=0)
+helpmenu.add_command(label="Giới thiệu",
+                     command=lambda: messagebox.showinfo("Giới thiệu", "Phiên bản 1.0"))
+menubar.add_cascade(label="Trợ giúp", menu=helpmenu)
+
+window.config(menu=menubar)                     # QUÊN dòng này = không thấy menu
+window.bind("&lt;Control-n&gt;", lambda e: lammoi())  # phím tắt thật</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Thanh menu (File / Trợ giúp)" height="252" loading="lazy" src="img/21.png" width="262"/></p><h3>Popup chuột phải</h3><pre><code>popup = tk.Menu(window, tearoff=0)
+popup.add_command(label="Xóa dòng này", command=xoa)
+
+
+def hien_popup(event):
+    dong = tree.identify_row(event.y)        # dòng nằm dưới chuột
+    if dong != "":
+        tree.selection_set(dong)             # chọn luôn dòng đó
+        popup.tk_popup(event.x_root, event.y_root)
+        popup.grab_release()
+
+tree.bind("&lt;Button-3&gt;", hien_popup)          # widget khác: bỏ 2 dòng identify/selection</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Popup chuột phải" height="164" loading="lazy" src="img/22.png" width="346"/></p><h3>Hỏi khi thoát (menu và nút X)</h3><pre><code>def thoat():
+    if messagebox.askyesno("Thoát", "Bạn có muốn thoát?"):
+        con.close()                  # nếu có CSDL
+        window.destroy()
+
+window.protocol("WM_DELETE_WINDOW", thoat)   # nút X góc cửa sổ</code></pre></section><section id="treeview"><h2>Treeview (bảng dữ liệu)</h2><h3>Tạo bảng + thanh cuộn</h3><ul><li><code>show="headings"</code> ẩn cột #0 thừa bên trái. Thanh cuộn ngang: <code>orient="horizontal"</code>, <code>command=tree.xview</code>, <code>xscrollcommand=</code>.</li></ul><pre><code>cot = ("ma", "ten", "diem")
+tree = ttk.Treeview(frmTree, columns=cot, show="headings", height=10)
+tree.heading("ma", text="Mã")
+tree.heading("ten", text="Họ tên")
+tree.heading("diem", text="Điểm")
+tree.column("ma", width=80, anchor="center")
+tree.column("ten", width=200, anchor="w")
+tree.column("diem", width=60, anchor="e")
+
+sb = ttk.Scrollbar(frmTree, orient="vertical", command=tree.yview)
+tree.configure(yscrollcommand=sb.set)
+tree.grid(row=0, column=0, sticky="nsew")
+sb.grid(row=0, column=1, sticky="ns")</code></pre><p class="shot">[ cửa sổ khi chạy ]<br/><img alt="Cửa sổ tkinter: Tạo bảng + thanh cuộn" height="264" loading="lazy" src="img/24.png" width="373"/></p><h3>Thêm / xóa hết / đọc dòng chọn</h3><ul><li><code>item()["values"]</code> tự đổi <code>"0912"</code> thành số <code>912</code> (mất số 0) → đọc lại từ CSDL theo mã, hoặc dùng <code>tree.set(id, cot)</code>.</li></ul><pre><code>tree.insert("", "end", values=("A01", "An", 8.5))
+tree.insert("", "end", iid="A01", values=row)   # iid = khóa -&gt; selection() trả về luôn mã
+
+for dong in tree.get_children():                # xóa hết
+    tree.delete(dong)
+
+chon = tree.selection()                         # tuple id dòng đang chọn
+if chon:
+    values = tree.item(chon[0])["values"]       # list giá trị của dòng
+    ma = values[0]
+    tree.set(chon[0], "ten")                    # 1 ô theo tên cột (giữ dạng chuỗi)
+
+len(tree.get_children())                        # số dòng
+tree.item("A01", values=("A01", "An", 9))       # sửa trực tiếp 1 dòng
+tree.delete(chon[0])                            # xóa 1 dòng
+tree.selection_remove(tree.selection())         # bỏ chọn</code></pre><h3>Tô màu dòng chẵn / lẻ, dòng đặc biệt</h3><pre><code>tree.tag_configure("chan", background="#eef3ff")
+tree.tag_configure("truot", foreground="red")
+
+i = 0
+for row in rows:
+    tag = "chan" if i % 2 == 0 else ""
+    if row[2] &lt; 5:
+        tag = "truot"
+    tree.insert("", "end", values=row, tags=(tag,))
+    i = i + 1</code></pre><h3>Sắp xếp khi bấm tiêu đề cột</h3><pre><code>def sap_xep(cot, giam=False):
+    ds = []
+    for i in tree.get_children():
+        ds.append((tree.set(i, cot), i))
+    ds.sort(reverse=giam)                 # cột số: ds.sort(key=lambda x: float(x[0]), ...)
+    vi_tri = 0
+    for gia_tri, i in ds:
+        tree.move(i, "", vi_tri)
+        vi_tri = vi_tri + 1
+    tree.heading(cot, command=lambda: sap_xep(cot, not giam))   # lần sau đảo chiều
+
+for c in cot:
+    tree.heading(c, command=lambda c=c: sap_xep(c))</code></pre><h3>Thống kê / xuất file từ Treeview</h3><pre><code>tong = 0
+for i in tree.get_children():
+    tong = tong + float(tree.set(i, "diem"))
+so_dong = len(tree.get_children())
+if so_dong &gt; 0:
+    lblTK.config(text=f"Số SV: {so_dong} - Điểm TB: {tong / so_dong:.2f}")
+
+f = open("danhsach.txt", "w", encoding="utf-8")
+for i in tree.get_children():
+    values = tree.item(i)["values"]
+    dong = []
+    for v in values:
+        dong.append(str(v))
+    f.write(";".join(dong) + "\n")
+f.close()
+messagebox.showinfo("Xuất file", "Đã lưu danhsach.txt")</code></pre></section><section id="sqlite"><h2>SQLite (và MySQL)</h2><h3>Kết nối + tạo bảng</h3><pre><code>import sqlite3
+con = sqlite3.connect("ql.db")         # chưa có file thì tự tạo
+cur = con.cursor()
+cur.execute("""CREATE TABLE IF NOT EXISTS sanpham(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,   -- tự tăng
+    ma TEXT UNIQUE NOT NULL,                -- không trùng, không rỗng
+    ten TEXT,
+    gia REAL DEFAULT 0,
+    soluong INTEGER)""")
+con.commit()</code></pre><table><thead><tr><th>Kiểu</th><th>Dùng cho</th></tr></thead><tbody><tr><td><code>TEXT</code></td><td>chữ, mã, SĐT (giữ số 0), ngày</td></tr><tr><td><code>INTEGER</code></td><td>số nguyên</td></tr><tr><td><code>REAL</code></td><td>số thực (giá, điểm)</td></tr></tbody></table><h3>4 câu lệnh CRUD</h3><ul><li>Sau INSERT / UPDATE / DELETE <b>luôn</b> <code>con.commit()</code>. SELECT thì không cần.</li></ul><pre><code># THÊM: số dấu ? = số giá trị
+cur.execute("INSERT INTO sinhvien VALUES (?, ?, ?)", (ma, ten, diem))
+cur.execute("INSERT INTO sinhvien(ma, ten) VALUES (?, ?)", (ma, ten))   # chỉ vài cột
+con.commit()
+
+# ĐỌC
+cur.execute("SELECT * FROM sinhvien")
+rows = cur.fetchall()                   # list các tuple, [] nếu rỗng
+cur.execute("SELECT * FROM sinhvien WHERE ma = ?", (ma,))   # (ma,) CÓ dấu phẩy!
+row = cur.fetchone()                    # 1 tuple hoặc None
+
+# SỬA
+cur.execute("UPDATE sinhvien SET ten = ?, diem = ? WHERE ma = ?", (ten, diem, ma))
+con.commit()
+
+# XÓA
+cur.execute("DELETE FROM sinhvien WHERE ma = ?", (ma,))
+con.commit()
+
+cur.rowcount        # số dòng vừa bị sửa/xóa (0 = không tìm thấy)
+con.close()</code></pre><h3>Tìm kiếm, sắp xếp, thống kê</h3><ul><li><code>LIKE</code> chỉ không phân biệt hoa/thường với chữ KHÔNG dấu: tìm <code>"bình"</code> không ra <code>"Bình"</code>. Muốn chắc ăn: đọc hết rồi lọc bằng Python <code>tu.lower() in ten.lower()</code>.</li></ul><pre><code>tu = txtTim.get().strip()
+cur.execute("SELECT * FROM sinhvien WHERE ten LIKE ?", ("%" + tu + "%",))   # chứa chuỗi
+cur.execute("SELECT * FROM sinhvien WHERE ten LIKE ?", (tu + "%",))         # bắt đầu bằng
+cur.execute("SELECT * FROM sinhvien WHERE diem &gt;= ? AND khoa = ?", (5, "CNTT"))
+cur.execute("SELECT * FROM sinhvien ORDER BY diem DESC, ten ASC")
+cur.execute("SELECT * FROM sinhvien ORDER BY diem DESC LIMIT 3")           # top 3
+
+cur.execute("SELECT COUNT(*), AVG(diem), MAX(diem), MIN(diem), SUM(diem) FROM sinhvien")
+dem, tb, cao, thap, tong = cur.fetchone()
+
+cur.execute("SELECT khoa, COUNT(*) FROM sinhvien GROUP BY khoa")
+for khoa, so in cur.fetchall():
+    print(khoa, so)
+
+cur.execute("SELECT * FROM sinhvien WHERE ma = ?", (ma,))
+if cur.fetchone() is not None:
+    messagebox.showerror("Lỗi", "Mã đã tồn tại")    # kiểm tra trùng không cần try</code></pre><h3>Bắt lỗi CSDL</h3><pre><code>try:
+    cur.execute("INSERT INTO sinhvien VALUES (?, ?, ?)", (ma, ten, diem))
+    con.commit()
+except sqlite3.IntegrityError:          # trùng PRIMARY KEY / UNIQUE, vi phạm NOT NULL
+    messagebox.showerror("Lỗi", "Mã đã tồn tại!")
+except sqlite3.OperationalError as e:   # sai tên bảng/cột, sai cú pháp SQL, DB bị khóa
+    messagebox.showerror("Lỗi SQL", str(e))</code></pre><h3>2 bảng: JOIN</h3><pre><code>cur.execute("""CREATE TABLE IF NOT EXISTS lop(malop TEXT PRIMARY KEY, tenlop TEXT)""")
+cur.execute("""CREATE TABLE IF NOT EXISTS sv(ma TEXT PRIMARY KEY, ten TEXT, malop TEXT,
+               FOREIGN KEY(malop) REFERENCES lop(malop))""")
+
+cur.execute("""SELECT sv.ma, sv.ten, lop.tenlop
+               FROM sv JOIN lop ON sv.malop = lop.malop
+               WHERE lop.malop = ?""", (malop,))</code></pre><h3>Nếu đề dùng MySQL</h3><ul><li>Khác SQLite: dấu giữ chỗ là <code>%s</code> (không phải <code>?</code>), <code>AUTO_INCREMENT</code> thay cho <code>AUTOINCREMENT</code>, kiểu <code>VARCHAR(50)</code>.</li></ul><pre><code>import mysql.connector          # pip install mysql-connector-python
+
+con = mysql.connector.connect(host="localhost", user="root", password="", database="qlsv")
+cur = con.cursor()
+cur.execute("INSERT INTO sinhvien VALUES (%s, %s, %s)", (ma, ten, diem))   # %s thay cho ?
+con.commit()
+
+try:
+    ...
+except mysql.connector.IntegrityError:
+    messagebox.showerror("Lỗi", "Mã đã tồn tại!")</code></pre></section><section id="kiemtra"><h2>Kiểm tra dữ liệu (validate)</h2><h3>Mẫu kiểm tra KHÔNG cần regex</h3><pre><code>s = txt.get().strip()
+s == ""                                   # rỗng
+s.isdigit()                               # toàn chữ số (không dấu -, không dấu .)
+len(s) == 10 and s.isdigit() and s[0] == "0"         # SĐT 10 số bắt đầu bằng 0
+len(s) == 6 and s[0] == "A" and s[1:].isdigit()      # mã A + 5 số
+s.replace(" ", "").isalpha()              # họ tên chỉ có chữ (có dấu tiếng Việt vẫn đúng)
+s.count("@") == 1 and "." in s.split("@")[1]         # email đơn giản
+len(s) &gt;= 6                               # mật khẩu đủ 6 ký tự</code></pre><h3>Số nguyên / số thực / khoảng giá trị</h3><pre><code>def luu():
+    try:
+        tuoi = int(txtTuoi.get())
+        diem = float(txtDiem.get().replace(",", "."))   # cho phép nhập 7,5
+        if tuoi &lt;= 0 or not (0 &lt;= diem &lt;= 10):
+            raise ValueError                            # tự ném lỗi để nhảy vào except
+    except ValueError:
+        messagebox.showerror("Lỗi", "Tuổi &gt; 0, điểm từ 0 đến 10")
+        txtTuoi.focus()
+        return                                          # dừng, không lưu
+    # ... lưu dữ liệu ...</code></pre><h3>Regex: mẫu dùng ngay</h3><pre><code>import re
+re.fullmatch(r"A\d{5}", s)                         # A45371
+re.fullmatch(r"0\d{9}", s)                         # SĐT 10 số bắt đầu 0
+re.fullmatch(r"(03|05|07|08|09)\d{8}", s)          # SĐT di động VN
+re.fullmatch(r"[\w.]+@\w+(\.\w+)+", s)             # email
+re.fullmatch(r"\d{2}/\d{2}/\d{4}", s)              # dd/mm/yyyy (chỉ kiểm tra dạng)
+re.fullmatch(r"[A-Z]{2}\d{3}", s)                  # SP001 kiểu 2 chữ hoa + 3 số
+re.fullmatch(r"\d+(\.\d+)?", s)                    # số thực dương
+re.fullmatch(r"\d{12}", s)                         # CCCD 12 số
+
+if not re.fullmatch(r"0\d{9}", s):                 # None = sai
+    messagebox.showerror("Lỗi", "SĐT không hợp lệ")</code></pre><table><thead><tr><th>Ký hiệu</th><th>Nghĩa</th></tr></thead><tbody><tr><td><code>\d</code> <code>\w</code> <code>\s</code></td><td>chữ số / chữ-số-_ / khoảng trắng</td></tr><tr><td><code>.</code></td><td>1 ký tự bất kỳ (<code>\.</code> = dấu chấm thật)</td></tr><tr><td><code>+</code> <code>*</code> <code>?</code></td><td>≥1 lần / ≥0 lần / 0-1 lần</td></tr><tr><td><code>{5}</code> <code>{2,4}</code></td><td>đúng 5 / từ 2 đến 4 lần</td></tr><tr><td><code>[abc]</code> <code>[A-Z]</code> <code>[^0-9]</code></td><td>1 trong / khoảng / KHÔNG phải</td></tr><tr><td><code>^</code> <code>$</code></td><td>đầu / cuối chuỗi (dùng <code>re.match</code>). <code>re.fullmatch</code> = khớp cả chuỗi</td></tr><tr><td><code>(a|b)</code></td><td>a hoặc b</td></tr></tbody></table><h3>Ngày tháng thật + tính tuổi</h3><pre><code>from datetime import datetime, date
+def tinh_tuoi():
+    try:
+        ns = datetime.strptime(txtNS.get(), "%d/%m/%Y")   # 31/02/2000 -&gt; ValueError
+    except ValueError:
+        messagebox.showerror("Lỗi", "Ngày sinh dạng dd/mm/yyyy")
+        return
+    hom_nay = date.today()
+    tuoi = hom_nay.year - ns.year - ((hom_nay.month, hom_nay.day) &lt; (ns.month, ns.day))
+    so_ngay = (datetime.now() - ns).days
+    return tuoi
+
+datetime.now().strftime("%d/%m/%Y %H:%M")              # "24/11/2026 20:15"</code></pre></section><section id="chuoi"><h2>Chuỗi &amp; định dạng số</h2><h3>f-string định dạng</h3><table><thead><tr><th>Viết</th><th>Ra</th><th>Ghi chú</th></tr></thead><tbody><tr><td><code>f"{1234567:,}"</code></td><td>1,234,567</td><td>phân cách hàng nghìn</td></tr><tr><td><code>f"{1234567.8:,.0f}"</code></td><td>1,234,568</td><td>số thực, 0 số lẻ</td></tr><tr><td><code>f"{x:,.0f}".replace(",", ".")</code></td><td>1.234.568</td><td>kiểu Việt Nam</td></tr><tr><td><code>f"{3.14159:.2f}"</code></td><td>3.14</td><td>2 chữ số thập phân</td></tr><tr><td><code>f"{0.256:.1%}"</code></td><td>25.6%</td><td>phần trăm</td></tr><tr><td><code>f"{7:03d}"</code></td><td>007</td><td>đệm số 0 (mã SP007)</td></tr><tr><td><code>f"{'An':&lt;10}|"</code></td><td><code>An        |</code></td><td>canh trái 10 ký tự (<code>&gt;</code> phải, <code>^</code> giữa)</td></tr><tr><td><code>round(2.675, 2)</code> / <code>int(7.9)</code></td><td>2.67 / 7</td><td>làm tròn / bỏ phần lẻ</td></tr></tbody></table><h3>Phương thức chuỗi hay dùng</h3><pre><code>s = "  nguyễn văn an  "
+s.strip()               # "nguyễn văn an"  (bỏ khoảng trắng 2 đầu)
+s.strip().title()       # "Nguyễn Văn An"  (chuẩn hóa họ tên)
+s.upper() / s.lower()
+" ".join(s.split())     # bỏ khoảng trắng thừa ở giữa
+s.split()               # ["nguyễn", "văn", "an"]  -&gt; s.split()[-1] = tên
+"a,b,c".split(",")      # ["a", "b", "c"]
+", ".join(["a", "b"])   # "a, b"
+s.replace("a", "b")
+s.find("văn")           # vị trí, -1 nếu không có
+"văn" in s              # True / False
+s.count("n")
+s.startswith("ng") / s.endswith("an")
+s[::-1]                 # đảo chuỗi
+s[0], s[-1], s[1:4]     # ký tự đầu, cuối, cắt
+len(s)
+str(123), int("123"), float("1.5")</code></pre></section><section id="file"><h2>Đọc / ghi file</h2><h3>File văn bản</h3><pre><code># Đọc tất cả dòng -&gt; list, bỏ dòng trống
+ds = []
+with open("khoa.txt", encoding="utf-8") as f:      # with: tự đóng file
+    for dong in f:
+        if dong.strip() != "":
+            ds.append(dong.strip())
+
+noi_dung = open("a.txt", encoding="utf-8").read()  # đọc cả file thành 1 chuỗi
+
+with open("ketqua.txt", "w", encoding="utf-8") as f:   # "w" ghi đè, "a" ghi thêm cuối
+    f.write("Dòng 1\n")
+    f.writelines(["a\n", "b\n"])
+
+import os
+if os.path.exists("khoa.txt"):        # kiểm tra trước khi đọc
+    ...
+
+try:
+    f = open("data.txt", encoding="utf-8")
+except FileNotFoundError:
+    messagebox.showerror("Lỗi", "Không tìm thấy file")</code></pre><h3>File dạng dòng có dấu phân cách / CSV / JSON</h3><pre><code># sanpham.txt:  SP01;Bút bi;5000
+ds_sp = []
+with open("sanpham.txt", encoding="utf-8") as f:
+    for dong in f:
+        ma, ten, gia = dong.strip().split(";")
+        ds_sp.append((ma, ten, float(gia)))
+
+import csv
+with open("ds.csv", "w", newline="", encoding="utf-8-sig") as f:   # utf-8-sig: Excel đọc được tiếng Việt
+    w = csv.writer(f)
+    w.writerow(["Mã", "Tên", "Điểm"])
+    w.writerows(rows)
+with open("ds.csv", encoding="utf-8-sig") as f:
+    for row in csv.reader(f):
+        print(row)
+
+import json
+with open("data.json", "w", encoding="utf-8") as f:
+    json.dump(danh_sach, f, ensure_ascii=False, indent=2)
+with open("data.json", encoding="utf-8") as f:
+    danh_sach = json.load(f)</code></pre></section><section id="baitap"><h2>Bài tính toán hay gặp</h2><h3>Bậc thang tổng quát (điện, nước, taxi, thuế)</h3><pre><code>def tinh_bac_thang(so, bac):
+    """bac = [(số lượng bậc, đơn giá), ..., (None, đơn giá cuối)]"""
+    tien = 0
+    for so_bac, gia in bac:
+        if so &lt;= 0:
+            break
+        dung = so if (so_bac is None or so &lt; so_bac) else so_bac
+        tien += dung * gia
+        so -= dung
+    return tien
+
+tinh_bac_thang(150, [(50, 1800), (50, 1900), (100, 2200), (None, 2800)])   # 295000
+tinh_bac_thang(12, [(1, 12000), (29, 10000), (None, 8000)])                 # taxi: 122000</code></pre><h3>Phần trăm theo mức (không lũy tiến)</h3><pre><code>def giam_gia(tong):            # mua &gt;= 1tr giảm 10%, &gt;= 500k giảm 5%
+    if tong &gt;= 1_000_000:
+        return tong * 0.10
+    elif tong &gt;= 500_000:
+        return tong * 0.05
+    return 0
+
+def xep_loai(d):
+    if d &gt;= 9: return "Xuất sắc"
+    elif d &gt;= 8: return "Giỏi"
+    elif d &gt;= 6.5: return "Khá"
+    elif d &gt;= 5: return "Trung bình"
+    else: return "Yếu"
+
+def diem_tb(qt, gk, ck):       # hệ số 1-2-7 -&gt; chia 10
+    return round(qt * 0.1 + gk * 0.2 + ck * 0.7, 2)
+
+def bmi(can, cao_m):
+    chi_so = can / (cao_m ** 2)
+    if chi_so &lt; 18.5: loai = "Gầy"
+    elif chi_so &lt; 25: loai = "Bình thường"
+    elif chi_so &lt; 30: loai = "Thừa cân"
+    else: loai = "Béo phì"
+    return round(chi_so, 2), loai</code></pre><h3>Phương trình bậc 1, bậc 2</h3><pre><code>import math
+
+def bac_nhat(a, b):                     # ax + b = 0
+    if a == 0:
+        return "Vô số nghiệm" if b == 0 else "Vô nghiệm"
+    return f"x = {-b / a:g}"
+
+def bac_hai(a, b, c):                   # ax² + bx + c = 0
+    if a == 0:
+        return bac_nhat(b, c)
+    delta = b * b - 4 * a * c
+    if delta &lt; 0:
+        return "Vô nghiệm"
+    elif delta == 0:
+        return f"Nghiệm kép x = {-b / (2 * a):g}"
+    x1 = (-b + math.sqrt(delta)) / (2 * a)
+    x2 = (-b - math.sqrt(delta)) / (2 * a)
+    return f"x1 = {x1:g}, x2 = {x2:g}"</code></pre><h3>Số học: nguyên tố, UCLN, giai thừa, Fibonacci…</h3><pre><code>import math
+
+def la_nguyen_to(n):
+    if n &lt; 2:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+[x for x in range(1, 100) if la_nguyen_to(x)]   # các số nguyên tố &lt; 100
+math.gcd(12, 18)                     # UCLN = 6
+12 * 18 // math.gcd(12, 18)          # BCNN = 36
+math.factorial(5)                    # 120
+
+def fibonacci(n):                    # n số đầu
+    ds = [0, 1]
+    while len(ds) &lt; n:
+        ds.append(ds[-1] + ds[-2])
+    return ds[:n]
+
+def tong_chu_so(n):
+    return sum(int(c) for c in str(abs(n)))
+
+def la_hoan_hao(n):                  # 6 = 1+2+3
+    return n &gt; 1 and sum(i for i in range(1, n) if n % i == 0) == n
+
+def nam_nhuan(y):
+    return (y % 4 == 0 and y % 100 != 0) or y % 400 == 0
+
+def so_ngay_trong_thang(t, y):
+    if t == 2:
+        return 29 if nam_nhuan(y) else 28
+    return 30 if t in (4, 6, 9, 11) else 31
+
+str(12321) == str(12321)[::-1]       # số / chuỗi đối xứng
+bin(10), int("1010", 2)              # nhị phân '0b1010' &lt;-&gt; 10</code></pre><h3>Danh sách số &amp; đếm từ</h3><pre><code>ds = [int(x) for x in "5 3 8 1".split()]       # nhập "5 3 8 1" -&gt; list số
+sum(ds), max(ds), min(ds), sum(ds) / len(ds)
+sorted(ds), sorted(ds, reverse=True)
+[x for x in ds if x % 2 == 0]                  # số chẵn
+
+van_ban = "an an binh chi an"
+dem = {}
+for tu in van_ban.split():
+    dem[tu] = dem.get(tu, 0) + 1               # {'an': 3, 'binh': 1, 'chi': 1}
+max(dem, key=dem.get)                          # từ xuất hiện nhiều nhất
+
+from collections import Counter
+Counter(van_ban.split()).most_common(2)        # [('an', 3), ('binh', 1)]</code></pre><h3>Lương / hóa đơn / đổi đơn vị</h3><pre><code>def tinh_luong(luong_cb, he_so, phu_cap, ngay_cong):
+    luong = luong_cb * he_so * ngay_cong / 26 + phu_cap
+    bao_hiem = luong_cb * he_so * 0.105         # BHXH+BHYT+BHTN 10.5%
+    return luong - bao_hiem
+
+def hoa_don(ds_hang):                           # [(tên, số lượng, đơn giá), ...]
+    tong = 0
+    for ten, sl, gia in ds_hang:
+        tong += sl * gia
+    vat = tong * 0.1
+    return tong, vat, tong + vat
+
+c_sang_f = lambda c: c * 9 / 5 + 32
+f_sang_c = lambda f: (f - 32) * 5 / 9
+usd_sang_vnd = lambda usd, ty_gia=25000: usd * ty_gia</code></pre></section><section id="python"><h2>Python cơ bản</h2><h3>List / Tuple / Dict / Set</h3><pre><code>ds = [3, 1, 2]
+ds.append(4); ds.insert(0, 9); ds.remove(9); ds.pop(); ds.pop(0)
+ds.sort(); ds.sort(reverse=True); ds.index(2); ds.count(2); len(ds)
+ds[0], ds[-1], ds[1:3], ds[::-1]
+3 in ds
+
+t = (1, "An", 8.5)               # tuple: không sửa được
+ma, ten, diem = t                # tách giá trị
+
+sv = {"ma": "A01", "ten": "An"}
+sv["diem"] = 9                   # thêm / sửa
+sv.get("lop", "Chưa có")         # đọc an toàn
+del sv["diem"]
+for k, v in sv.items():
+    print(k, v)
+
+ds_sv = [{"ten": "An", "diem": 8}, {"ten": "Bình", "diem": 6}]
+sorted(ds_sv, key=lambda x: x["diem"], reverse=True)   # sắp theo điểm
+max(ds_sv, key=lambda x: x["diem"])["ten"]             # người cao nhất
+
+s = {1, 2, 2, 3}                 # set: tự bỏ trùng -&gt; {1, 2, 3}
+list(set(ds))                    # bỏ phần tử trùng</code></pre><h3>Vòng lặp, hàm, list comprehension</h3><pre><code>for i in range(1, 11, 2):      # 1 3 5 7 9   (range(đầu, cuối-không-lấy, bước))
+    print(i, end=" ")
+for i, ten in enumerate(["An", "Bình"], start=1):
+    print(i, ten)
+for ten, diem in zip(["An", "Bình"], [8, 6]):
+    print(ten, diem)
+
+while True:
+    s = input("Nhập số (q để thoát): ")
+    if s == "q":
+        break
+    if not s.isdigit():
+        continue
+
+def tinh(a, b=2, *so, **tuy_chon):   # tham số mặc định, nhiều tham số
+    return a + b, a * b               # trả về nhiều giá trị (tuple)
+tong, tich = tinh(3)
+
+binh_phuong = [x * x for x in range(5)]
+chan = [x for x in range(10) if x % 2 == 0]</code></pre><h3>Ngoại lệ</h3><pre><code>try:
+    x = int(input("Số: "))
+    kq = 10 / x
+except ValueError:
+    print("Không phải số")
+except ZeroDivisionError:
+    print("Chia cho 0")
+except Exception as e:          # mọi lỗi khác
+    print("Lỗi:", e)
+else:
+    print("Không lỗi:", kq)     # chỉ chạy khi không có lỗi
+finally:
+    print("Luôn chạy")
+
+if x &lt; 0:
+    raise ValueError("Số phải dương")   # tự ném lỗi</code></pre><table><thead><tr><th>Lỗi</th><th>Khi nào</th></tr></thead><tbody><tr><td><code>ValueError</code></td><td><code>int("abc")</code></td></tr><tr><td><code>ZeroDivisionError</code></td><td>chia 0</td></tr><tr><td><code>IndexError</code></td><td>list vượt chỉ số</td></tr><tr><td><code>KeyError</code></td><td>dict không có khóa</td></tr><tr><td><code>TypeError</code></td><td><code>"a" + 1</code></td></tr><tr><td><code>NameError</code></td><td>tên biến chưa có / gõ sai</td></tr><tr><td><code>FileNotFoundError</code></td><td>không thấy file</td></tr><tr><td><code>AttributeError</code></td><td><code>None.get()</code>, sai tên method</td></tr></tbody></table></section><section id="oop"><h2>Lập trình hướng đối tượng</h2><h3>Class, kế thừa, super()</h3><pre><code>class Nguoi:
+    so_luong = 0                          # thuộc tính lớp (dùng chung)
+
+    def __init__(self, ten, tuoi):        # hàm khởi tạo
+        self.ten = ten                    # thuộc tính đối tượng
+        self.tuoi = tuoi
+        self.__cccd = ""                  # __ = private
+        Nguoi.so_luong += 1
+
+    def gioi_thieu(self):
+        return f"{self.ten}, {self.tuoi} tuổi"
+
+    def __str__(self):                    # print(obj) sẽ ra chuỗi này
+        return self.gioi_thieu()
+
+
+class SinhVien(Nguoi):                    # kế thừa
+    def __init__(self, ten, tuoi, ma, diem):
+        super().__init__(ten, tuoi)       # GỌI init của lớp cha
+        self.ma = ma
+        self.diem = diem
+
+    def gioi_thieu(self):                 # ghi đè (override)
+        return super().gioi_thieu() + f" - {self.ma} - {self.xep_loai()}"
+
+    def xep_loai(self):
+        return "Giỏi" if self.diem &gt;= 8 else "Khá" if self.diem &gt;= 6.5 else "TB"
+
+
+ds = [SinhVien("An", 20, "A01", 8.5), SinhVien("Bình", 21, "A02", 6)]
+for sv in ds:
+    print(sv)                             # gọi __str__
+tot_nhat = max(ds, key=lambda sv: sv.diem)
+isinstance(ds[0], Nguoi)                  # True
+Nguoi.so_luong                            # 2</code></pre><h3>@property (getter / setter có kiểm tra)</h3><pre><code>class SanPham:
+    def __init__(self, ten, gia):
+        self.ten = ten
+        self.gia = gia                    # đi qua setter bên dưới
+
+    @property
+    def gia(self):
+        return self._gia
+
+    @gia.setter
+    def gia(self, gt):
+        if gt &lt; 0:
+            raise ValueError("Giá không âm")
+        self._gia = gt
+
+sp = SanPham("Bút", 5000)
+sp.gia = 6000          # OK</code></pre></section><section id="loi"><h2>Lỗi thường gặp → cách sửa</h2><h3>Bảng tra lỗi</h3><table><thead><tr><th>Thông báo / hiện tượng</th><th>Nguyên nhân</th><th>Sửa</th></tr></thead><tbody><tr><td><code>'NoneType' object has no attribute 'get'</code></td><td><code>x = tk.Entry(...).grid(...)</code>: grid() trả về None</td><td>Tách: <code>x = tk.Entry(...)</code> rồi <code>x.grid(...)</code></td></tr><tr><td>Chương trình treo / <code>cannot use geometry manager grid inside . which already has slaves managed by pack</code></td><td>Trộn pack và grid trong cùng khung</td><td>Mỗi khung chỉ 1 kiểu; dùng Frame con</td></tr><tr><td>Hàm chạy ngay khi mở, bấm nút không chạy</td><td><code>command=ham()</code></td><td><code>command=ham</code> hoặc <code>command=lambda: ham(x)</code></td></tr><tr><td><code>Incorrect number of bindings supplied</code></td><td>Số <code>?</code> ≠ số giá trị, hoặc viết <code>(ma)</code> thay vì <code>(ma,)</code></td><td>Đếm lại <code>?</code>; tuple 1 phần tử cần dấu phẩy</td></tr><tr><td><code>table X has 6 columns but 5 values were supplied</code></td><td>INSERT thiếu giá trị</td><td>Thêm giá trị hoặc ghi rõ cột <code>INSERT INTO t(a,b) VALUES (?,?)</code></td></tr><tr><td><code>no such table</code> / <code>no such column</code></td><td>Sai tên, hoặc file .db cũ có cấu trúc khác</td><td>Sửa tên; <b>xóa file .db cũ</b> rồi chạy lại</td></tr><tr><td><code>UNIQUE constraint failed</code></td><td>Trùng khóa chính</td><td><code>except sqlite3.IntegrityError</code></td></tr><tr><td>Tắt chương trình mở lại mất dữ liệu</td><td>Quên <code>con.commit()</code></td><td>commit sau mọi INSERT/UPDATE/DELETE</td></tr><tr><td><code>database is locked</code></td><td>File .db đang mở ở chương trình khác (DB Browser)</td><td>Đóng chương trình kia / Write Changes</td></tr><tr><td><code>FileNotFoundError: khoa.txt</code></td><td>Chạy Python từ thư mục khác</td><td><code>os.chdir(os.path.dirname(os.path.abspath(__file__)))</code></td></tr><tr><td><code>UnicodeDecodeError</code> / chữ Việt lỗi font</td><td>Thiếu encoding</td><td><code>open(..., encoding="utf-8")</code></td></tr><tr><td><code>module 'tkinter' has no attribute 'messagebox'</code></td><td>Chưa import</td><td><code>from tkinter import messagebox</code></td></tr><tr><td><code>name 'END' is not defined</code></td><td>Dùng <code>import tkinter as tk</code></td><td><code>tk.END</code> hoặc <code>"end"</code></td></tr><tr><td><code>unknown option "-textvar"</code></td><td>Sai tên tùy chọn</td><td><code>textvariable</code>, <code>variable</code>, <code>command</code>, <code>values</code>…</td></tr><tr><td><code>Too early to create variable</code></td><td>Tạo StringVar trước <code>tk.Tk()</code></td><td>Đưa xuống sau <code>window = tk.Tk()</code></td></tr><tr><td>Tick 1 Checkbutton, tất cả cùng tick</td><td>Dùng chung 1 biến</td><td>Mỗi Checkbutton 1 IntVar riêng</td></tr><tr><td>Chọn được cả Nam lẫn Nữ</td><td>Radiobutton dùng 2 biến khác nhau</td><td>Dùng CHUNG 1 StringVar, khác <code>value</code></td></tr><tr><td>SĐT mất số 0 khi chọn dòng Treeview</td><td>Treeview đổi chuỗi số sang int</td><td>Đọc lại từ CSDL theo mã; cột SĐT để TEXT</td></tr><tr><td>Ảnh không hiện</td><td>PhotoImage bị Python thu hồi</td><td><code>lbl.image = img</code> (giữ tham chiếu)</td></tr><tr><td><code>askquestion</code> luôn đúng/sai</td><td>Trả về chuỗi <code>"yes"</code>/<code>"no"</code></td><td><code>if ... == "yes"</code> hoặc dùng <code>askyesno</code></td></tr><tr><td><code>IndentationError</code></td><td>Trộn tab và dấu cách / thụt lề sai</td><td>Thụt 4 dấu cách đồng nhất</td></tr><tr><td><code>could not convert string to float: ''</code></td><td>Ô nhập rỗng</td><td>Bọc <code>try/except ValueError</code></td></tr><tr><td>Sửa xong mã bị đổi / sửa sai dòng</td><td>Cho sửa khóa chính</td><td>Sau khi chọn dòng: <code>txtMa.config(state="readonly")</code></td></tr></tbody></table></section>
+<p id="empty">Không tìm thấy. Thử từ khác, ví dụ: <i>entry</i>, <i>combobox</i>, <i>like</i>, <i>bac thang</i>.</p>
+
+</body>
+</html>
