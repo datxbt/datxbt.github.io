@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>datxbt files</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 16px;color:#222;background:#fff}
+  @media (prefers-color-scheme:dark){body{color:#ddd;background:#111}a{color:#8ab4ff}}
+  li{margin:6px 0} small{color:#888}
+</style></head>
+<body>
+<h1>Files</h1>
+<ul id="list">
+  <li><a href="python.zip" download>python.zip</a></li>
+</ul>
+<script>
+// Refresh the list from the repo so new files show up without editing this page.
+fetch('https://api.github.com/repos/datxbt/datxbt.github.io/contents/')
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(items => {
+    const files = items.filter(i => i.type === 'file' && !i.name.startsWith('.') && i.name !== 'index.html');
+    if (!files.length) return;
+    document.getElementById('list').innerHTML = files.map(f =>
+      `<li><a href="${encodeURI(f.name)}" download>${f.name}</a> <small>${(f.size/1024).toFixed(0)} KB</small></li>`).join('');
+  }).catch(() => {});
+</script>
+</body></html>
